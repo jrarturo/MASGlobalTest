@@ -1,0 +1,91 @@
+﻿@{
+    ViewBag.Title = "Employess";
+}
+
+<h2>Employees</h2>
+Employee ID: <input type="text" name="txtEmployeeId" id="txtEmployeeId" />
+<input type="button" name="btnGetEmployees" id="btnGetEmployees" value="Get Employees" />
+<div id="employeesTableContainer"></div>
+
+<script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+        crossorigin="anonymous"></script>
+<script type="text/javascript">
+    var apiUrl = 'http://localhost:50929/api/employees';
+
+    $(document).ready(function () {
+        getEmployees();
+        $('#btnGetEmployees').click(function () {
+            var employeeId = $('#txtEmployeeId').val();
+            getEmployeeById(employeeId);
+        });
+    });
+
+    function getEmployees() {
+        $.ajax({
+            url: apiUrl,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (result) {
+                var table = $('<table border=1px></table>');
+                var header = $('<tr><td>Name</td><td>Role:</td><td>Anual Salary:</td></tr>');
+                table.append(header);
+                $.each(result, function (index) {
+                    row = $('<tr></tr>');
+                    var employeeName = $('<td></td>').text(result[index].Name);
+                    var employeeRole = $('<td></td>').text(result[index].RoleName);
+                    var employeeSalary = $('<td></td>').text(result[index].Salary);
+                    row.append(employeeName);
+                    row.append(employeeRole);
+                    row.append(employeeSalary);
+                    table.append(row);
+                });
+                $('#employeesTableContainer').html(table);
+            },
+            error: function (error) {
+                console.log("Error calling employee api: " + error);
+            }
+
+        })
+    }
+
+    function getEmployeeById(employeeId) {
+
+        if (employeeId == "") {
+            getEmployees();
+            return;
+        }
+
+        $.ajax({
+            url: apiUrl + '?id=' + employeeId,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (result) {
+                if (result.Id === 0) {
+                    var employeNotFoundMessage = '<div>Employee with id ' + employeeId + ' could not be found</div>'
+                    $('#employeesTableContainer').html(employeNotFoundMessage);
+                    return;
+                }
+
+                var table = $('<table></table>');
+                var header = $('<tr><td>Name</td><td>Role:</td><td>Anual Salary:</td></tr>');
+                table.append(header);
+
+                row = $('<tr></tr>');
+                var employeeName = result.Name;
+                var employeeRole = result.RoleName;
+                var employeeSalary = result.Salary;
+                row.append(employeeName);
+                row.append(employeeRole);
+                row.append(employeeSalary);
+                table.append(row);
+
+                $('#employeesTableContainer').html(table);
+            },
+            error: function (error) {
+                console.log("Error calling employee api: " + error);
+            }
+
+        })
+    }
+</script>
